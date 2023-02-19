@@ -27,3 +27,13 @@ yarn-error.log*
 client/node_modules
 server/node_modules
 ipfs/node_modules
+
+ipfs-repo3/blocks/
+ipfs-repo3/datastore/
+ipfs-repo3/keystore/
+ipfs-repo3/locks/
+ipfs-repo3/swarm.key
+ipfs-repo3/config
+ipfs-repo3/version
+ipfs-repo3/pins
+

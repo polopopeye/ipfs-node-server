@@ -3,7 +3,9 @@
   "version": "0.0.1",
   "description": "ipfs to create ipfs daemons",
   "main": "index.js",
+  "type": "module",
   "scripts": {
+    "start": "node index.js --trace-warnings",
     "start:ipfs": "jsipfs daemon",
     "install:ipfs": "npm install -g ipfs",
     "config:ipfs": "jsipfs config --json API.HTTPHeaders.Access-Control-Allow-Origin '[\"http://127.0.0.1:5002\", \"http://localhost:3000\", \"http://127.0.0.1:5001\", \"https://webui.ipfs.io\"]'",
@@ -13,7 +15,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "ipfs-core": "^0.18.0"
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "express-fileupload": "^1.4.0",
+    "ipfs-core": "^0.18.0",
+    "prom-client": "^14.1.1"
   },
   "engines": {
     "node": "19.6.1"
