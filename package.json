@@ -1,0 +1,21 @@
+{
+  "name": "ipfs-server",
+  "version": "0.0.1",
+  "description": "ipfs to create ipfs daemons",
+  "main": "index.js",
+  "scripts": {
+    "start:ipfs": "jsipfs daemon",
+    "install:ipfs": "npm install -g ipfs",
+    "config:ipfs": "jsipfs config --json API.HTTPHeaders.Access-Control-Allow-Origin '[\"http://127.0.0.1:5002\", \"http://localhost:3000\", \"http://127.0.0.1:5001\", \"https://webui.ipfs.io\"]'",
+    "methods:ipfs": "jsipfs config --json API.HTTPHeaders.Access-Control-Allow-Methods '[\"PUT\", \"POST\"]'",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "ipfs-core": "^0.18.0"
+  },
+  "engines": {
+    "node": "19.6.1"
+  }
+}
