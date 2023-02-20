@@ -2,59 +2,27 @@ import { create } from 'ipfs-core';
 import express from 'express';
 import fileUpload from 'express-fileupload';
 import cors from 'cors';
+import { ipfsConfigBootstrap } from './config/ipfsConfig.js';
+import * as dotenv from 'dotenv';
 
 const app = express();
 app.use(fileUpload());
 app.use(cors());
 process.setMaxListeners(0);
 //
-
-const port = 3005;
+dotenv.config();
+const port = process.env.PORT; //IPFS_PORT;
 
 const ipfs = await create({
   repo: 'ipfs-repo3',
   //   config: ipfsConfig,
 });
 
+ipfsConfigBootstrap(ipfs);
+
 // get the api link of ipfs
 const api = await ipfs.config.get('Addresses.API');
 console.log(`fastlog => ipfs api`, api);
-// const ipfs = await create();
-
-ipfs.config.set('API.HTTPHeaders.Access-Control-Allow-Origin', [
-  'webui://-',
-  'http://localhost:3000',
-  'http://127.0.0.1:5001',
-  'https://webui.ipfs.io',
-]);
-ipfs.config.set('API.HTTPHeaders.Access-Control-Allow-Methods', [
-  'PUT',
-  'GET',
-  'POST',
-  'OPTIONS',
-]);
-// Auto pin added objects to local storage
-ipfs.config.set('Pinning.EnableGC', true);
-// Enable auto relay
-ipfs.config.set('Relay.Enabled', true);
-// Enable pubsub
-ipfs.config.set('Pubsub.Enabled', true);
-// Filestore enable
-ipfs.config.set('Experimental.FilestoreEnabled', true);
-// Enable sharding
-ipfs.config.set('Experimental.ShardingEnabled', true);
-// Enable QUIC
-ipfs.config.set('Experimental.QUIC', true);
-// Enable urlstore
-ipfs.config.set('Experimental.UrlstoreEnabled', true);
-// Enable ipns over pubsub
-ipfs.config.set('Experimental.IPNSPubsub', true);
-// Enable dnsaddr
-ipfs.config.set('Discovery.MDNS.Enabled', true);
-// Enable libp2p relay
-ipfs.config.set('Swarm.EnableRelayHop', true);
-// Enable autorelay
-ipfs.config.set('Swarm.EnableAutoRelay', true);
 
 app.get('/', (req, res) => {
   res.send('Hello World!');
