@@ -21,14 +21,6 @@ const api = await ipfs.config.get('Addresses.API');
 console.log(`fastlog => ipfs api`, api);
 // const ipfs = await create();
 
-// set cors headers ipfs
-// ipfs.config.set('API.HTTPHeaders.Access-Control-Allow-Origin', [
-//   'http://localhost:3000',
-//   'http://localhost:3005',
-//   'http://localhost:4003',
-//   'http://localhost:5001',
-//   'https://webui.ipfs.io/',
-// ]);
 ipfs.config.set('API.HTTPHeaders.Access-Control-Allow-Origin', [
   'webui://-',
   'http://localhost:3000',
@@ -41,6 +33,28 @@ ipfs.config.set('API.HTTPHeaders.Access-Control-Allow-Methods', [
   'POST',
   'OPTIONS',
 ]);
+// Auto pin added objects to local storage
+ipfs.config.set('Pinning.EnableGC', true);
+// Enable auto relay
+ipfs.config.set('Relay.Enabled', true);
+// Enable pubsub
+ipfs.config.set('Pubsub.Enabled', true);
+// Filestore enable
+ipfs.config.set('Experimental.FilestoreEnabled', true);
+// Enable sharding
+ipfs.config.set('Experimental.ShardingEnabled', true);
+// Enable QUIC
+ipfs.config.set('Experimental.QUIC', true);
+// Enable urlstore
+ipfs.config.set('Experimental.UrlstoreEnabled', true);
+// Enable ipns over pubsub
+ipfs.config.set('Experimental.IPNSPubsub', true);
+// Enable dnsaddr
+ipfs.config.set('Discovery.MDNS.Enabled', true);
+// Enable libp2p relay
+ipfs.config.set('Swarm.EnableRelayHop', true);
+// Enable autorelay
+ipfs.config.set('Swarm.EnableAutoRelay', true);
 
 app.get('/', (req, res) => {
   res.send('Hello World!');
