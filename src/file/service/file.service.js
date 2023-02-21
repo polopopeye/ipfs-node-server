@@ -40,7 +40,7 @@ export const uploadFileInfoToDB = async (req, res) => {
 
   if (!req.body) res.status(400).send('Missing file info');
 
-  const { name, size, type, description, tags } = req.body;
+  const { name, size, type, description, tags, cover } = req.body;
 
   const file = {
     cid,
@@ -49,9 +49,10 @@ export const uploadFileInfoToDB = async (req, res) => {
     tags,
     size,
     type,
+    cover,
   };
 
-  if (!name || !size || !type || !description || !tags) {
+  if (!name || !size || !type || !description || !tags || !cover) {
     res.status(400).send('Missing file info');
   }
   if (!cid) {

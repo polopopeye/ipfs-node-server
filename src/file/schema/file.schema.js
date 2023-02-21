@@ -8,6 +8,7 @@ const fileUploadSchema = new mongoose.Schema({
   size: Number,
   cid: String,
   date: { type: Date, default: Date.now },
+  cover: String,
 });
 
 export const File = mongoose.model('file', fileUploadSchema);
