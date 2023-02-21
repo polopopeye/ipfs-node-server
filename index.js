@@ -7,7 +7,7 @@ import appModule from './src/app.module.js';
 const bootstrap = async () => {
   const app = express();
   app.use(fileUpload());
-
+  app.use(express.json());
   app.use(cors());
   process.setMaxListeners(0);
   dotenv.config();
