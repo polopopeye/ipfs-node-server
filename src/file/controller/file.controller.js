@@ -1,4 +1,5 @@
 import {
+  getFilesFromDB,
   uploadFileInfoToDB,
   uploadFileToIPFS,
 } from '../service/file.service.js';
@@ -11,6 +12,10 @@ const fileController = (app, { ipfs, db }) => {
 
   app.post(controllerName + '/upload/:cid', async (req, res) => {
     await uploadFileInfoToDB(req, res);
+  });
+
+  app.get(controllerName + '/files', async (req, res) => {
+    await getFilesFromDB(req, res);
   });
 };
 

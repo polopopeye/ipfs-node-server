@@ -68,3 +68,8 @@ export const uploadFileInfoToDB = async (req, res) => {
     res.send(file);
   });
 };
+
+export const getFilesFromDB = async (req, res) => {
+  const files = await File.find();
+  res.send(files);
+};
