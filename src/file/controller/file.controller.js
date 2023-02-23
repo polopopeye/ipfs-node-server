@@ -1,4 +1,5 @@
 import {
+  getFileFromDB,
   getFilesFromDB,
   uploadFileInfoToDB,
   uploadFileToIPFS,
@@ -16,6 +17,10 @@ const fileController = (app, { ipfs, db }) => {
 
   app.get(controllerName + '/files', async (req, res) => {
     await getFilesFromDB(req, res);
+  });
+
+  app.get(controllerName + '/files/:cid', async (req, res) => {
+    await getFileFromDB(req, res);
   });
 };
 

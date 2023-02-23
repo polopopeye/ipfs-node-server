@@ -73,3 +73,9 @@ export const getFilesFromDB = async (req, res) => {
   const files = await File.find();
   res.send(files);
 };
+
+export const getFileFromDB = async (req, res) => {
+  const { cid } = req.params;
+  const file = await File.findOne({ cid });
+  res.send(file);
+};
