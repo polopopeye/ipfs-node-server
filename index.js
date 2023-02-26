@@ -3,13 +3,28 @@ import * as dotenv from 'dotenv';
 import express from 'express';
 import fileUpload from 'express-fileupload';
 import appModule from './src/app.module.js';
+// import { EventEmitter } from 'events';
+import EventEmitter from 'events';
 
 const bootstrap = async () => {
+  process.setMaxListeners(0);
+  console.log(
+    `fastlog => process.getMaxListeners()`,
+    process.getMaxListeners()
+  );
+  EventEmitter.defaultMaxListeners = 0;
+  EventEmitter.setMaxListeners(0);
+
+  const emitter = new EventEmitter();
+  emitter.setMaxListeners(0);
+  emitter.defaultMaxListeners = 0;
+
   const app = express();
+  app.setMaxListeners(0);
+
   app.use(fileUpload());
   app.use(express.json());
   app.use(cors());
-  process.setMaxListeners(0);
   dotenv.config();
   const port = process.env.PORT; //IPFS_PORT;
 

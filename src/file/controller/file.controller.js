@@ -1,12 +1,19 @@
 import {
+  downloadFileFromIpfs,
   getFileFromDB,
   getFilesFromDB,
   uploadFileInfoToDB,
   uploadFileToIPFS,
 } from '../service/file.service.js';
+import { getStatsFile } from '../service/fileStats.service.js';
 
-const fileController = (app, { ipfs, db }) => {
+const fileController = (app, { ipfs }) => {
   const controllerName = '/file';
+
+  app.post(controllerName + '/download/:cid', async (req, res) => {
+    await downloadFileFromIpfs(req, res, { ipfs });
+  });
+
   app.post(controllerName + '/upload', async (req, res) => {
     await uploadFileToIPFS(req, res, { ipfs });
   });
@@ -21,6 +28,10 @@ const fileController = (app, { ipfs, db }) => {
 
   app.get(controllerName + '/files/:cid', async (req, res) => {
     await getFileFromDB(req, res);
+  });
+
+  app.get(controllerName + '/stats/:cid', async (req, res) => {
+    await getStatsFile(req, res);
   });
 };
 

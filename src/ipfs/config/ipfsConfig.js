@@ -49,6 +49,10 @@ export const ipfsConfigBootstrap = (ipfs) => {
   ipfs.config.set('Discovery.MDNS.Enabled', true);
   // Enable libp2p relay
   ipfs.config.set('Swarm.EnableRelayHop', true);
+  // swarm hogh water mark
+  ipfs.config.set('Swarm.ConnMgr.HighWater', 1000); // recommended 1000
+  // swarm low water mark
+  ipfs.config.set('Swarm.ConnMgr.LowWater', 500); // recommended 500
   // Enable autorelay
   ipfs.config.set('Swarm.EnableAutoRelay', true);
   //   disable nat port mapping
@@ -71,7 +75,10 @@ export const ipfsConfigBootstrap = (ipfs) => {
   ipfs.config.set('Mounts.FuseAllowOther', false);
 
   //   //   ipfs api, gateway, rpc
-  //   ipfs.config.set('Addresses.API', ipfsApi);
-  //   ipfs.config.set('Addresses.Gateway', ipfsGateway);
-  //   ipfs.config.set('Addresses.RPC', ipfsRPC);
+  ipfs.config.set('Addresses.API', ipfsApi);
+  ipfs.config.set('Addresses.Gateway', ipfsGateway);
+  ipfs.config.set('Addresses.RPC', ipfsRPC);
+
+  // Enable dht
+  ipfs.config.set('Routing.Type', 'dhtclient');
 };

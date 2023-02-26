@@ -1,4 +1,6 @@
 import { File } from '../schema/file.schema.js';
+import asyncIteratorToStream from 'async-iterator-to-stream';
+import { Multiaddr } from 'multiaddr/src/index.js';
 
 export const uploadFileToIPFS = async (req, res, { ipfs }) => {
   req.on('aborted', () => {
@@ -35,12 +37,85 @@ export const uploadFileToIPFS = async (req, res, { ipfs }) => {
   });
 };
 
+export const downloadFileFromIpfs = async (req, res, { ipfs }) => {
+  const { cid } = req.params;
+  const { address } = req.body;
+
+  if (address && address.length > 0) {
+    await address.forEach(async (addr) => {
+      console.log(`fastlog => addr:`, addr);
+      const multiAddr = new Multiaddr(addr);
+      console.log(`fastlog => multiAddr:`, multiAddr);
+
+      const peer = await ipfs.swarm.connect(multiAddr);
+
+      console.log(`fastlog => peer:`, peer);
+    });
+  }
+
+  console.log(`fastlog => cid:`, cid);
+  const stream = ipfs.cat(cid);
+
+  const ipfsStream = asyncIteratorToStream(stream);
+  // res.send(ipfsStream);
+
+  req.on('aborted', () => {
+    console.log(`fastlog => aborted fileDownload`);
+    res.end();
+  });
+  req.on('error', (err) => {
+    console.log(`fastlog => error fileDownload`, err);
+  });
+
+  ipfsStream
+    .on('data', (chunk) => {
+      console.log(`fastlog => chunk:`, chunk);
+      res.write(chunk);
+    })
+    .on('error', (err) => {
+      console.log(`fastlog => err:`, err);
+    })
+    .on('abort', () => {
+      console.log(`fastlog => abort`);
+    })
+    .on('close', () => {
+      console.log(`fastlog => close`);
+    })
+    .on('end', (data) => {
+      res.end();
+      console.log(`fastlog => end`);
+    });
+
+  // stream.on('data', (chunk) => {
+  //   console.log(`fastlog => chunk:`, chunk);
+  //   res.send(chunk);
+  // });
+
+  // const data = await stream.next();
+
+  // console.log(`fastlog => data:`, data);
+
+  // res.on('data', (chunk) => {
+  //   console.log(`fastlog => chunk:`, chunk);
+  //   res.send(chunk);
+  // });
+
+  // const decoder = new TextDecoder('utf-8');
+  // let data = '';
+
+  // for await (const chunk of stream) {
+  //   data += decoder.decode(chunk);
+  // }
+
+  // res.send(data);
+};
+
 export const uploadFileInfoToDB = async (req, res) => {
   const { cid } = req.params;
 
   if (!req.body) res.status(400).send('Missing file info');
 
-  const { name, size, type, description, tags, cover } = req.body;
+  const { name, size, type, description, tags, cover, owner } = req.body;
 
   const file = {
     cid,
@@ -50,6 +125,7 @@ export const uploadFileInfoToDB = async (req, res) => {
     size,
     type,
     cover,
+    owner,
   };
 
   if (!name || !size || !type || !description || !tags || !cover) {
@@ -77,5 +153,22 @@ export const getFilesFromDB = async (req, res) => {
 export const getFileFromDB = async (req, res) => {
   const { cid } = req.params;
   const file = await File.findOne({ cid });
+
+  if (!file) {
+    const newFile = {
+      cid,
+    };
+
+    new File(newFile).save((err, file) => {
+      if (err) {
+        console.log(`fastlog => err`, err);
+        res.status(500).send('Error saving file to DB');
+      }
+      console.log(`fastlog => file`, file);
+      res.send(file);
+    });
+    return;
+  }
+
   res.send(file);
 };

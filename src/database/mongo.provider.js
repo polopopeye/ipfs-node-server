@@ -8,6 +8,6 @@ export const mongoConnection = async () => {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   });
-  console.log(`fastlog => db`, db);
+
   return db;
 };
