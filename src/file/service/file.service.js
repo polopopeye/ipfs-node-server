@@ -3,6 +3,7 @@ import asyncIteratorToStream from 'async-iterator-to-stream';
 import { Multiaddr } from 'multiaddr/src/index.js';
 import { byteNormalize } from '../../utils/bytesSizeConvert.js';
 import fs from 'fs';
+import { isFileExist } from '../../utils/isExist.js';
 export const uploadFileToIPFS = async (req, res, { ipfs }) => {
   req.on('aborted', () => {
     console.log(`fastlog => aborted fileUpload`);
@@ -42,6 +43,11 @@ export const uploadFileToIPFS = async (req, res, { ipfs }) => {
 export const downloadFileFromIpfs = async (req, res, { ipfs }) => {
   const { cid } = req.params;
   const { address } = req.body;
+  // la idea es que solo este de la db.
+  // verify if cid is in the db
+
+  const file = await isFileExist(cid, res);
+  if (!file) return;
 
   if (address && address.length > 0) {
     await address.forEach(async (addr) => {
@@ -59,7 +65,6 @@ export const downloadFileFromIpfs = async (req, res, { ipfs }) => {
   const stream = ipfs.cat(cid);
 
   const ipfsStream = asyncIteratorToStream(stream);
-  // res.send(ipfsStream);
 
   req.on('aborted', () => {
     console.log(`fastlog => aborted fileDownload`);
@@ -71,8 +76,9 @@ export const downloadFileFromIpfs = async (req, res, { ipfs }) => {
 
   ipfsStream
     .on('data', (chunk) => {
-      console.log(`fastlog => chunk:`, chunk);
-      res.write(chunk);
+      // Export chunk in a nice way
+      const converChunk = Buffer.from(chunk).toString('hex');
+      res.write(converChunk);
     })
     .on('error', (err) => {
       console.log(`fastlog => err:`, err);
@@ -87,29 +93,6 @@ export const downloadFileFromIpfs = async (req, res, { ipfs }) => {
       res.end();
       console.log(`fastlog => end`);
     });
-
-  // stream.on('data', (chunk) => {
-  //   console.log(`fastlog => chunk:`, chunk);
-  //   res.send(chunk);
-  // });
-
-  // const data = await stream.next();
-
-  // console.log(`fastlog => data:`, data);
-
-  // res.on('data', (chunk) => {
-  //   console.log(`fastlog => chunk:`, chunk);
-  //   res.send(chunk);
-  // });
-
-  // const decoder = new TextDecoder('utf-8');
-  // let data = '';
-
-  // for await (const chunk of stream) {
-  //   data += decoder.decode(chunk);
-  // }
-
-  // res.send(data);
 };
 
 export const uploadFileInfoToDB = async (req, res) => {
@@ -154,23 +137,8 @@ export const getFilesFromDB = async (req, res) => {
 
 export const getFileFromDB = async (req, res) => {
   const { cid } = req.params;
-  const file = await File.findOne({ cid });
-
-  if (!file) {
-    const newFile = {
-      cid,
-    };
-
-    new File(newFile).save((err, file) => {
-      if (err) {
-        console.log(`fastlog => err`, err);
-        res.status(500).send('Error saving file to DB');
-      }
-      console.log(`fastlog => file`, file);
-      res.send(file);
-    });
-    return;
-  }
+  const file = await isFileExist(cid, res);
+  if (!file) return;
 
   res.send(file);
 };

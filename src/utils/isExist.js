@@ -14,11 +14,12 @@ export const isUserExist = async ({ id, email }, res) => {
 
 export const isFileExist = async (cid, res) => {
   const file = await File.findOne({ cid });
+  const cover = await File.findOne({ cover: cid });
 
-  if (!file) {
+  if (!file && !cover) {
     res.status(400).send('File not found');
     return false;
   }
 
-  return file;
+  return file || cover;
 };

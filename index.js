@@ -36,20 +36,3 @@ const bootstrap = async () => {
 };
 
 bootstrap();
-
-// app.get('/download/:cid', async (req, res) => {
-//   try {
-//     const { cid } = req.params;
-//     const file = await ipfs.cat(cid, {
-//       timeout: 10000,
-//     });
-//     console.log(`fastlog => file`, file);
-
-//     res.send(file);
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).send('Error fetching file from IPFS');
-//   }
-
-//   console.log(' - file downloaded');
-// });

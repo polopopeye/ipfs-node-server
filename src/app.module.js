@@ -5,7 +5,7 @@ import ipfsModule from './ipfs/ipfs.module.js';
 import { userModule } from './user/user.module.js';
 
 const appModule = async (app, { upload }) => {
-  const db = await mongoConnection();
+  await mongoConnection();
 
   appController(app);
 
