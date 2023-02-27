@@ -1,10 +1,9 @@
 import cors from 'cors';
 import * as dotenv from 'dotenv';
 import express from 'express';
-import fileUpload from 'express-fileupload';
 import appModule from './src/app.module.js';
-// import { EventEmitter } from 'events';
 import EventEmitter from 'events';
+import multer from 'multer';
 
 const bootstrap = async () => {
   process.setMaxListeners(0);
@@ -22,13 +21,14 @@ const bootstrap = async () => {
   const app = express();
   app.setMaxListeners(0);
 
-  app.use(fileUpload());
+  const upload = multer({ dest: 'uploads' });
+
   app.use(express.json());
   app.use(cors());
   dotenv.config();
   const port = process.env.PORT; //IPFS_PORT;
 
-  await appModule(app);
+  await appModule(app, { upload });
 
   app.listen(port, () => {
     console.log(`Example app listening at http://localhost:${port}`);

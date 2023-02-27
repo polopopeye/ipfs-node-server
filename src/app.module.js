@@ -4,14 +4,14 @@ import { fileModule } from './file/file.module.js';
 import ipfsModule from './ipfs/ipfs.module.js';
 import { userModule } from './user/user.module.js';
 
-const appModule = async (app) => {
+const appModule = async (app, { upload }) => {
   const db = await mongoConnection();
 
   appController(app);
 
   //   imported modules
   const { ipfs } = await ipfsModule(app);
-  fileModule(app, { ipfs });
+  fileModule(app, { ipfs, upload });
   userModule(app);
 };
 

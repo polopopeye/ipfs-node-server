@@ -1,7 +1,8 @@
 import { File } from '../schema/file.schema.js';
 import asyncIteratorToStream from 'async-iterator-to-stream';
 import { Multiaddr } from 'multiaddr/src/index.js';
-
+import { byteNormalize } from '../../utils/bytesSizeConvert.js';
+import fs from 'fs';
 export const uploadFileToIPFS = async (req, res, { ipfs }) => {
   req.on('aborted', () => {
     console.log(`fastlog => aborted fileUpload`);
@@ -9,31 +10,32 @@ export const uploadFileToIPFS = async (req, res, { ipfs }) => {
   req.on('error', (err) => {
     console.log(`fastlog => error fileUpload`, err);
   });
+  const file = req.file;
+  const path = file.path;
+  // create stream from file
+  const stream = fs.createReadStream(path);
 
-  const buffer = [];
-  req.on('data', (chunk) => {
-    console.log(`fastlog => chunk:`, chunk);
-    buffer.push(chunk);
+  const result = await ipfs.add(stream, {
+    progress: (prog) => console.log(`received: ${byteNormalize(prog)}`),
+    chunker: 'size-6000000', // Best performance for large files
+    onlyHash: false, // Don't store the file in the local repo
+    pin: true, // Pin the file in the local repo
+    wrapWithDirectory: false, // Don't wrap the file in a directory
+  });
+  console.log(`fastlog => result:`, result);
+
+  res.on('finish', () => {
+    console.log(`fastlog => finish`);
+    fs.unlink(path, (err) => {
+      if (err) {
+        console.log(`fastlog => error:`, err);
+      }
+    });
   });
 
-  req.on('end', async () => {
-    // get data uint8array
-
-    const file = Buffer.concat(buffer);
-    console.log(`fastlog => file:`, file);
-
-    const fileUint8Array = new Uint8Array(file);
-    console.log(`fastlog => fileUint8Array:`, fileUint8Array);
-
-    // we add the file to the IPFS network
-    const result = await ipfs.add(fileUint8Array);
-    console.log(`fastlog => result:`, result);
-
-    // we send the CID back to the user
-    res.send({
-      cid: result.cid.toString(),
-      size: result.size,
-    });
+  res.send({
+    cid: result.cid.toString(),
+    size: result.size,
   });
 };
 
