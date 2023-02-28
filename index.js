@@ -5,6 +5,8 @@ import appModule from './src/app.module.js';
 import EventEmitter from 'events';
 import multer from 'multer';
 import bodyParser from 'body-parser';
+import { Server } from 'socket.io';
+import http from 'http';
 
 const bootstrap = async () => {
   process.setMaxListeners(0);
@@ -30,9 +32,17 @@ const bootstrap = async () => {
   dotenv.config();
   const port = process.env.PORT; //IPFS_PORT;
 
-  await appModule(app, { upload });
+  const httpServer = http.createServer(app);
 
-  app.listen(port, () => {
+  const io = new Server(httpServer, {
+    cors: {
+      origin: '*',
+    },
+  });
+
+  await appModule(app, { upload, io });
+
+  httpServer.listen(port, () => {
     console.log(`Example app listening at http://localhost:${port}`);
   });
 };

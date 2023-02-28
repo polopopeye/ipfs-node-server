@@ -18,7 +18,9 @@ export const isFileExist = async (cid, res) => {
   const cover = await File.findOne({ cover: cid });
 
   if (!file && !cover) {
-    res.status(400).send('File not found');
+    if (res) {
+      res.status(400).send('File not found');
+    }
     return false;
   }
 

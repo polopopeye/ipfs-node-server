@@ -40,61 +40,65 @@ export const uploadFileToIPFS = async (req, res, { ipfs }) => {
   });
 };
 
-export const downloadFileFromIpfs = async (req, res, { ipfs }) => {
-  const { cid } = req.params;
+export const downloadFileFromIpfs = async (socket, { ipfs, cid, type }) => {
   // const { address } = req.body;
   // la idea es que solo este de la db.
   // verify if cid is in the db
 
-  const file = await isFileExist(cid, res);
+  const file = await isFileExist(cid);
   if (!file) return;
+  console.log(`fastlog => file:`, file);
 
-  // if (address && address.length > 0) {
-  //   await address.forEach(async (addr) => {
-  //     console.log(`fastlog => addr:`, addr);
-  //     const multiAddr = new Multiaddr(addr);
-  //     console.log(`fastlog => multiAddr:`, multiAddr);
+  let count = 0;
 
-  //     const peer = await ipfs.swarm.connect(multiAddr);
+  socket.emit(`download/${type}/chunk/`, {
+    status: 'start',
+    file,
+  });
 
-  //     console.log(`fastlog => peer:`, peer);
-  //   });
-  // }
-
-  console.log(`fastlog => cid:`, cid);
   const stream = ipfs.cat(cid);
-  console.log(`fastlog => stream:`, stream);
 
   const ipfsStream = asyncIteratorToStream(stream);
-  console.log(`fastlog => ipfsStream:`, ipfsStream);
-
-  // req.on('aborted', () => {
-  //   console.log(`fastlog => aborted fileDownload`);
-  //   res.end();
-  // });
-  req.on('error', (err) => {
-    console.log(`fastlog => error fileDownload`, err);
-  });
 
   ipfsStream
     .on('data', (chunk) => {
-      console.log(`fastlog => chunk:`, chunk);
-      // Export chunk in a nice way
-      const converChunk = Buffer.from(chunk).toString('hex');
-      res.write(converChunk);
+      count += chunk.length;
+      const progress = (count * 100) / file.size / 100;
+      console.log(`fastlog => progress:`, progress);
+
+      socket.emit(`download/${type}/chunk/`, {
+        status: 'downloading',
+        chunk: Buffer.from(chunk),
+        progress,
+      });
     })
     .on('error', (err) => {
       console.log(`fastlog => err:`, err);
+      socket.emit(`download/${type}/chunk/`, {
+        status: 'error',
+        cid,
+      });
     })
     .on('abort', () => {
       console.log(`fastlog => abort`);
+      socket.emit(`download/${type}/chunk/`, {
+        status: 'abort',
+        cid,
+      });
     })
     .on('close', () => {
       console.log(`fastlog => close`);
+      socket.emit(`download/${type}/chunk/`, {
+        status: 'close',
+        cid,
+      });
     })
     .on('end', () => {
       console.log(`fastlog => end`);
-      res.end();
+      socket.emit(`download/${type}/chunk/`, {
+        status: 'end',
+        cid,
+      });
     });
 };
 
