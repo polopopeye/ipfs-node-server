@@ -42,40 +42,43 @@ export const uploadFileToIPFS = async (req, res, { ipfs }) => {
 
 export const downloadFileFromIpfs = async (req, res, { ipfs }) => {
   const { cid } = req.params;
-  const { address } = req.body;
+  // const { address } = req.body;
   // la idea es que solo este de la db.
   // verify if cid is in the db
 
   const file = await isFileExist(cid, res);
   if (!file) return;
 
-  if (address && address.length > 0) {
-    await address.forEach(async (addr) => {
-      console.log(`fastlog => addr:`, addr);
-      const multiAddr = new Multiaddr(addr);
-      console.log(`fastlog => multiAddr:`, multiAddr);
+  // if (address && address.length > 0) {
+  //   await address.forEach(async (addr) => {
+  //     console.log(`fastlog => addr:`, addr);
+  //     const multiAddr = new Multiaddr(addr);
+  //     console.log(`fastlog => multiAddr:`, multiAddr);
 
-      const peer = await ipfs.swarm.connect(multiAddr);
+  //     const peer = await ipfs.swarm.connect(multiAddr);
 
-      console.log(`fastlog => peer:`, peer);
-    });
-  }
+  //     console.log(`fastlog => peer:`, peer);
+  //   });
+  // }
 
   console.log(`fastlog => cid:`, cid);
   const stream = ipfs.cat(cid);
+  console.log(`fastlog => stream:`, stream);
 
   const ipfsStream = asyncIteratorToStream(stream);
+  console.log(`fastlog => ipfsStream:`, ipfsStream);
 
-  req.on('aborted', () => {
-    console.log(`fastlog => aborted fileDownload`);
-    res.end();
-  });
+  // req.on('aborted', () => {
+  //   console.log(`fastlog => aborted fileDownload`);
+  //   res.end();
+  // });
   req.on('error', (err) => {
     console.log(`fastlog => error fileDownload`, err);
   });
 
   ipfsStream
     .on('data', (chunk) => {
+      console.log(`fastlog => chunk:`, chunk);
       // Export chunk in a nice way
       const converChunk = Buffer.from(chunk).toString('hex');
       res.write(converChunk);
@@ -89,9 +92,9 @@ export const downloadFileFromIpfs = async (req, res, { ipfs }) => {
     .on('close', () => {
       console.log(`fastlog => close`);
     })
-    .on('end', (data) => {
-      res.end();
+    .on('end', () => {
       console.log(`fastlog => end`);
+      res.end();
     });
 };
 
@@ -131,14 +134,54 @@ export const uploadFileInfoToDB = async (req, res) => {
 };
 
 export const getFilesFromDB = async (req, res) => {
-  const files = await File.find();
-  res.send(files);
+  const { mode, period, type, tags, userId, sortMode } = req.body;
+  // currently only supports mode, and tags.
+
+  // TODO: add more filters, period, type, etc.
+  // TODO: add pagination and limit
+
+  let filters = {
+    tags: undefined,
+  };
+
+  const sortResponse = (arr) => {
+    // TODO: add more options, size, date, tipe, name, etc.
+    const sortModeOptions = ['likes', 'reports', 'dislikes', 'favorites'];
+    if (!sortMode || sortMode === '') return arr;
+    if (!sortModeOptions.includes(sortMode)) return arr;
+    return arr.sort((a, b) => {
+      return b[sortMode].length - a[sortMode].length;
+    });
+  };
+
+  const modeOptions = ['all', 'favorites', 'likes', 'reports', 'dislikes']; //TODO: add more options, trending, etc.
+  if (!mode || !modeOptions.includes(mode)) filters.mode = 'all';
+  if (tags && tags.length > 0)
+    filters.tags = {
+      tags: { $in: tags },
+    };
+
+  if (modeOptions.includes(mode) && mode !== 'all') {
+    if (!userId) return res.status(400).send('Missing user id');
+    const files = await File.find({
+      ...filters.tags,
+      [mode]: { $in: [userId] },
+    });
+
+    res.send(sortResponse(files));
+    return;
+  }
+
+  const files = await File.find({
+    ...filters.tags,
+  });
+  res.send(sortResponse(files));
+  return;
 };
 
 export const getFileFromDB = async (req, res) => {
   const { cid } = req.params;
   const file = await isFileExist(cid, res);
   if (!file) return;
-
   res.send(file);
 };

@@ -4,6 +4,7 @@ import express from 'express';
 import appModule from './src/app.module.js';
 import EventEmitter from 'events';
 import multer from 'multer';
+import bodyParser from 'body-parser';
 
 const bootstrap = async () => {
   process.setMaxListeners(0);
@@ -23,7 +24,8 @@ const bootstrap = async () => {
 
   const upload = multer({ dest: 'uploads' });
 
-  app.use(express.json());
+  app.use(bodyParser.json({ limit: '50000mb' }));
+
   app.use(cors());
   dotenv.config();
   const port = process.env.PORT; //IPFS_PORT;

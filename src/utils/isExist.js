@@ -1,4 +1,5 @@
 import { File } from '../file/schema/file.schema.js';
+import { Tag } from '../tags/schema/tags.schema.js';
 import { User } from '../user/schema/user.schema.js';
 
 export const isUserExist = async ({ id, email }, res) => {
@@ -22,4 +23,14 @@ export const isFileExist = async (cid, res) => {
   }
 
   return file || cover;
+};
+
+export const isTagExist = async (mode) => {
+  const tag = await Tag.findOne({ mode });
+
+  if (!tag) {
+    return false;
+  }
+
+  return tag;
 };

@@ -10,7 +10,7 @@ import { getStatsFile } from '../service/fileStats.service.js';
 const fileController = (app, { ipfs, upload }) => {
   const controllerName = '/file';
 
-  app.post(controllerName + '/download/:cid', async (req, res) => {
+  app.get(controllerName + '/download/:cid', async (req, res) => {
     await downloadFileFromIpfs(req, res, { ipfs });
   });
 
@@ -26,7 +26,7 @@ const fileController = (app, { ipfs, upload }) => {
     await uploadFileInfoToDB(req, res);
   });
 
-  app.get(controllerName + '/files', async (req, res) => {
+  app.post(controllerName + '/files', async (req, res) => {
     await getFilesFromDB(req, res);
   });
 

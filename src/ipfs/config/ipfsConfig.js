@@ -50,9 +50,9 @@ export const ipfsConfigBootstrap = (ipfs) => {
   // Enable libp2p relay
   ipfs.config.set('Swarm.EnableRelayHop', true);
   // swarm hogh water mark
-  ipfs.config.set('Swarm.ConnMgr.HighWater', 1000); // recommended 1000
+  ipfs.config.set('Swarm.ConnMgr.HighWater', 500); // recommended 1000
   // swarm low water mark
-  ipfs.config.set('Swarm.ConnMgr.LowWater', 500); // recommended 500
+  ipfs.config.set('Swarm.ConnMgr.LowWater', 400); // recommended 500
   // Enable autorelay
   ipfs.config.set('Swarm.EnableAutoRelay', true);
   //   disable nat port mapping
