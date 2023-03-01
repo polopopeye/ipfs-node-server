@@ -1,9 +1,8 @@
-import { File } from '../schema/file.schema.js';
 import asyncIteratorToStream from 'async-iterator-to-stream';
-import { Multiaddr } from 'multiaddr/src/index.js';
-import { byteNormalize } from '../../utils/bytesSizeConvert.js';
 import fs from 'fs';
+import { byteNormalize } from '../../utils/bytesSizeConvert.js';
 import { isFileExist } from '../../utils/isExist.js';
+import { File } from '../schema/file.schema.js';
 export const uploadFileToIPFS = async (req, res, { ipfs }) => {
   req.on('aborted', () => {
     console.log(`fastlog => aborted fileUpload`);
@@ -64,7 +63,10 @@ export const downloadFileFromIpfs = async (socket, { ipfs, cid, type }) => {
     .on('data', (chunk) => {
       count += chunk.length;
       const progress = (count * 100) / file.size / 100;
-      console.log(`fastlog => progress:`, progress);
+      // only send progress every 20%
+      if (progress % 0.2 > 0) {
+        console.log(`fastlog => progress:`, progress);
+      }
 
       socket.emit(`download/${type}/chunk/`, {
         status: 'downloading',
