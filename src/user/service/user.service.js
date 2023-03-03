@@ -21,3 +21,19 @@ export const createUser = async (req, res) => {
 
   res.send(newUser);
 };
+
+export const getUser = async (req, res) => {
+  const { id } = req.body;
+
+  const user = await User.findOne({ id });
+  if (!user) {
+    res.status(400).send('User not found');
+    return;
+  }
+  const { coverImg, displayName } = user;
+
+  res.send({
+    coverImg,
+    displayName,
+  });
+};

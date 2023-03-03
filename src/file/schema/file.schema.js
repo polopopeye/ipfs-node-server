@@ -1,5 +1,22 @@
 import mongoose from 'mongoose';
 
+const IComments = {
+  userId: String,
+  comment: String,
+  date: { type: Date, default: Date.now },
+  likes: [String],
+  dislikes: [String],
+  reports: [String],
+};
+
+export const IReports = {
+  userId: String,
+  reason: String,
+  date: { type: Date, default: Date.now },
+  reasons: [String],
+  comments: String,
+};
+
 const fileUploadSchema = new mongoose.Schema({
   name: String || undefined || null,
   description: String || undefined || null,
@@ -13,7 +30,8 @@ const fileUploadSchema = new mongoose.Schema({
   likes: [String],
   dislikes: [String],
   favorites: [String],
-  reports: [String],
+  comments: [IComments],
+  reports: [IReports],
   owner: String || null || undefined,
 });
 

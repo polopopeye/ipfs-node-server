@@ -10,7 +10,7 @@ import { getStatsFile } from '../service/fileStats.service.js';
 const fileController = (app, { ipfs, io, upload }) => {
   const controllerName = '/file';
 
-  //Whenever someone connects this gets executed
+  // SOCKET
   io.on('connection', function (socket) {
     socket.on('download/cover', async (cid) => {
       await downloadFileFromIpfs(socket, { ipfs, cid, type: 'cover' });

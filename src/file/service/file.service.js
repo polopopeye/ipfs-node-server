@@ -46,7 +46,6 @@ export const downloadFileFromIpfs = async (socket, { ipfs, cid, type }) => {
 
   const file = await isFileExist(cid);
   if (!file) return;
-  console.log(`fastlog => file:`, file);
 
   let count = 0;
 
@@ -63,10 +62,6 @@ export const downloadFileFromIpfs = async (socket, { ipfs, cid, type }) => {
     .on('data', (chunk) => {
       count += chunk.length;
       const progress = (count * 100) / file.size / 100;
-      // only send progress every 20%
-      if (progress % 0.2 > 0) {
-        console.log(`fastlog => progress:`, progress);
-      }
 
       socket.emit(`download/${type}/chunk/`, {
         status: 'downloading',
@@ -96,7 +91,6 @@ export const downloadFileFromIpfs = async (socket, { ipfs, cid, type }) => {
       });
     })
     .on('end', () => {
-      console.log(`fastlog => end`);
       socket.emit(`download/${type}/chunk/`, {
         status: 'end',
         cid,
@@ -129,6 +123,12 @@ export const uploadFileInfoToDB = async (req, res) => {
     res.status(400).send('Missing file CID');
   }
 
+  const fileExist = await isFileExist(cid);
+  if (fileExist) {
+    res.send(fileExist);
+    return;
+  }
+
   new File(file).save((err, file) => {
     if (err) {
       console.log(`fastlog => err`, err);
@@ -140,7 +140,7 @@ export const uploadFileInfoToDB = async (req, res) => {
 };
 
 export const getFilesFromDB = async (req, res) => {
-  const { mode, period, type, tags, userId, sortMode } = req.body;
+  const { mode, period, type, tags, userId, sortMode, searchStr } = req.body;
   // currently only supports mode, and tags.
 
   // TODO: add more filters, period, type, etc.
@@ -148,6 +148,8 @@ export const getFilesFromDB = async (req, res) => {
 
   let filters = {
     tags: undefined,
+    name: undefined,
+    description: undefined,
   };
 
   const sortResponse = (arr) => {
@@ -167,10 +169,20 @@ export const getFilesFromDB = async (req, res) => {
       tags: { $in: tags },
     };
 
+  if (searchStr && searchStr !== '') {
+    filters.name = {
+      name: { $regex: searchStr, $options: 'i' },
+    };
+    // filters.description = {
+    //   description: { $regex: searchStr, $options: 'i' },
+    // };
+  }
+
   if (modeOptions.includes(mode) && mode !== 'all') {
     if (!userId) return res.status(400).send('Missing user id');
     const files = await File.find({
       ...filters.tags,
+      ...filters.name,
       [mode]: { $in: [userId] },
     });
 
@@ -180,6 +192,7 @@ export const getFilesFromDB = async (req, res) => {
 
   const files = await File.find({
     ...filters.tags,
+    ...filters.name,
   });
   res.send(sortResponse(files));
   return;
