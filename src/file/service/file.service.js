@@ -67,6 +67,7 @@ export const downloadFileFromIpfs = async (socket, { ipfs, cid, type }) => {
         status: 'downloading',
         chunk: Buffer.from(chunk),
         progress,
+        sizeSent: count,
       });
     })
     .on('error', (err) => {
