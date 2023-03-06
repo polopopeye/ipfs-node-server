@@ -1,6 +1,7 @@
 import {
   downloadFileFromIpfs,
   getFileFromDB,
+  getFileFromIpfs,
   getFilesFromDB,
   uploadFileInfoToDB,
   uploadFileToIPFS,
@@ -18,6 +19,7 @@ const fileController = (app, { ipfs, io, upload }) => {
     socket.on('download/file', async (cid) => {
       await downloadFileFromIpfs(socket, { ipfs, cid, type: 'file' });
     });
+
   });
 
   app.post(
@@ -42,6 +44,11 @@ const fileController = (app, { ipfs, io, upload }) => {
 
   app.get(controllerName + '/stats/:cid', async (req, res) => {
     await getStatsFile(req, res);
+  });
+
+
+  app.get(controllerName + '/get/:cid', async (req, res) => {
+    await getFileFromIpfs(req, res, { ipfs });
   });
 };
 

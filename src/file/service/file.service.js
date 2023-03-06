@@ -1,4 +1,5 @@
 import asyncIteratorToStream from 'async-iterator-to-stream';
+import { Blob } from 'buffer';
 import fs from 'fs';
 import { byteNormalize } from '../../utils/bytesSizeConvert.js';
 import { isFileExist } from '../../utils/isExist.js';
@@ -205,3 +206,49 @@ export const getFileFromDB = async (req, res) => {
   if (!file) return;
   res.send(file);
 };
+
+
+
+export const getFileFromIpfs = async (req, res, {ipfs}) => {
+
+  const { cid } = req.params;
+
+const file = await isFileExist(cid, res);
+  if (!file) return;
+
+  const stream = ipfs.cat(cid);
+
+  const ipfsStream = asyncIteratorToStream(stream);
+
+
+  //const blobList = [];
+  const bufferList = [];
+  ipfsStream
+    .on('data', (chunk) => {
+     const buffer = Buffer.from(chunk);
+      bufferList.push(buffer);
+      //const blob = new Blob([chunk]);
+      //blobList.push(blob);
+    }).on('error', (err) => {
+      console.log(`fastlog => err:`, err);
+      res.status(500).send('Error downloading file');
+    }).on('end', () => {
+      //const blob = new Blob(blobList);
+      //const sendFile = new File([blob], file.name, { type: file.type });
+
+      const sendFile = Buffer.concat(bufferList);
+
+    //res.setHeader('Content-disposition', `attachment; filename=${file.name}`);
+      //res.send(blob);
+
+      res.setHeader('Content-Type', file.type);
+      res.setHeader('Content-Length', file.size);
+      
+
+      res.send(sendFile);
+
+    });
+
+};
+
+  
